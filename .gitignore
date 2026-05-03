@@ -1,0 +1,7 @@
+node_modules
+dist
+.env
+.dev.log
+Screenshot_*.jpg
+.reimport_backup_*
+received_*.jpeg
