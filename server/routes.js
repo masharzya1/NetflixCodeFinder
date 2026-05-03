@@ -68,24 +68,9 @@ function normalizeEmailSearchText(value) {
     .toLowerCase();
 }
 
-function hasFourDigitVerificationCode(content) {
+function hasFourDigitCode(content) {
   const normalized = normalizeEmailSearchText(content);
-  if (!normalized) return false;
-
-  const codeContext = /(?:verification|security|temporary|access|login|sign[ -]?in|one[ -]?time|passcode|pin|code|enter|use|valid|expires|expire)/i;
-  const matches = normalized.matchAll(/(?:^|\D)(\d{4})(?!\d)/g);
-
-  for (const match of matches) {
-    const start = Math.max(0, match.index - 80);
-    const end = Math.min(normalized.length, match.index + match[0].length + 80);
-    const nearbyText = normalized.slice(start, end);
-
-    if (codeContext.test(nearbyText)) {
-      return true;
-    }
-  }
-
-  return false;
+  return /(?:^|\D)\d{4}(?!\d)/.test(normalized);
 }
 
 function isTemporaryOrHouseholdEmail(email) {
@@ -112,7 +97,7 @@ ${text}`;
     "yes-it-was-me",
   ];
 
-  return keywords.some((item) => content.includes(item)) || hasFourDigitVerificationCode(content);
+  return keywords.some((item) => content.includes(item)) || hasFourDigitCode(content);
 }
 
 function decodeBase64Url(value) {
