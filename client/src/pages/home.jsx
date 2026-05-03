@@ -206,6 +206,10 @@ export default function Home() {
   const [showDetailOnMobile, setShowDetailOnMobile] = useState(false);
   const [pageToken, setPageToken] = useState(null);
   const [translatedSubjects, setTranslatedSubjects] = useState({});
+  const emailListSignature = useMemo(
+    () => (results?.emails || []).map((email) => email.id).join("|"),
+    [results?.emails]
+  );
   const authSchema = useMemo(
     () =>
       z.object({
@@ -307,7 +311,7 @@ export default function Home() {
 
     async function translateSubjects() {
       if (!results?.emails?.length) return;
-      const missing = results.emails.filter((email) => !translatedSubjects[email.id]);
+      const missing = results.emails.filter((email) => translatedSubjects[email.id]?.language !== language);
       if (!missing.length) return;
 
       const translated = await translateTextBatch(
@@ -319,7 +323,10 @@ export default function Home() {
       setTranslatedSubjects((previous) => {
         const next = { ...previous };
         missing.forEach((email, index) => {
-          next[email.id] = translated[index] || getSubjectPreview(email.subject);
+          next[email.id] = {
+            language,
+            text: translated[index] || getSubjectPreview(email.subject),
+          };
         });
         return next;
       });
@@ -329,7 +336,7 @@ export default function Home() {
     return () => {
       mounted = false;
     };
-  }, [results?.emails, language]);
+  }, [emailListSignature, language, translatedSubjects]);
 
   const selectedEmail = useMemo(() => {
     if (!results?.emails?.length) return null;
@@ -502,7 +509,7 @@ export default function Home() {
                               <p className="text-sm text-white font-semibold truncate">
                                 {cleanSenderName(email.from)}
                               </p>
-                              <p className="text-sm text-neutral-300 truncate mt-0.5">{translatedSubjects[email.id] || getSubjectPreview(email.subject)}</p>
+                              <p className="text-sm text-neutral-300 truncate mt-0.5">{translatedSubjects[email.id]?.text || getSubjectPreview(email.subject)}</p>
                               <p className="text-xs text-neutral-500 truncate mt-1">To: {cleanRecipient(email.to) || session.mailbox.email}</p>
                             </div>
                             <span className="text-[10px] sm:text-[11px] text-neutral-500 whitespace-nowrap flex-shrink-0">
@@ -539,7 +546,7 @@ export default function Home() {
                     {selectedEmail ? (
                       <>
                         <div className="p-3 sm:p-4 border-b border-neutral-800 bg-neutral-900/90 min-w-0">
-                          <p className="text-white text-sm sm:text-base font-semibold break-words">{translatedSubjects[selectedEmail.id] || selectedEmail.subject}</p>
+                          <p className="text-white text-sm sm:text-base font-semibold break-words">{translatedSubjects[selectedEmail.id]?.text || selectedEmail.subject}</p>
                           <p className="text-xs text-neutral-400 mt-1">
                             From: {cleanSenderName(selectedEmail.from)} • To: {cleanRecipient(selectedEmail.to) || "N/A"}
                           </p>

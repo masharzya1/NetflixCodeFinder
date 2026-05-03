@@ -89,9 +89,23 @@ export function useAutoTranslate(targetLanguage, dependencies = []) {
     }
 
     const timer = window.setTimeout(run, 100);
+    const observerTimer = window.setTimeout(() => {
+      const root = ref.current;
+      if (!root || typeof MutationObserver === "undefined") return;
+
+      const observer = new MutationObserver(() => {
+        window.clearTimeout(timer);
+        run();
+      });
+
+      observer.observe(root, { childList: true, subtree: true });
+      window.setTimeout(() => observer.disconnect(), 2500);
+    }, 0);
+
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
+      window.clearTimeout(observerTimer);
     };
   }, [targetLanguage, ...dependencies]);
 
