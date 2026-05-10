@@ -70,13 +70,16 @@ function normalizeEmailSearchText(value) {
 
 function hasFourDigitCode(content) {
   const normalized = normalizeEmailSearchText(content);
-  return /(?:^|\D)\d{4}(?!\d)/.test(normalized);
+  // 4-digit code অবশ্যই whitespace দিয়ে surrounded থাকতে হবে
+  // "2bac2506-a2b1" → match করবে না
+  // "Your code is 1234" বা "Code: 1234" → match করবে
+  return /(?:^|[\s:])(\d{4})(?=[\s]|$)/.test(normalized);
 }
 
 function hasDigitCodeLongerThanFour(content) {
   const normalized = normalizeEmailSearchText(content);
-  // 5 থেকে 8 digit standalone number = OTP/password reset code
-  return /(?:^|\D)\d{5,8}(?!\d)/.test(normalized);
+  // শুধু whitespace-surrounded 5-8 digit number কে code হিসেবে ধরো
+  return /(?:^|[\s:])(\d{5,8})(?=[\s]|$)/.test(normalized);
 }
 
 function isTemporaryOrHouseholdEmail(email) {
