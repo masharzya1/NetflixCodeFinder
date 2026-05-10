@@ -69,7 +69,6 @@ function normalizeEmailSearchText(value) {
 }
 
 function hasFourDigitCode(content) {
-function hasFourDigitCode(content) {
   const normalized = normalizeEmailSearchText(content);
   return /(?:^|\D)\d{4}(?!\d)/.test(normalized);
 }
@@ -646,6 +645,7 @@ export async function registerRoutes(httpServer, app) {
   app.get("/api/user/emails", async (req, res) => {
     const session = requireAccessSession(req, res);
     if (!session) return;
+
     const pageToken = String(req.query?.pageToken || "");
     const pageSize = Math.min(Math.max(parseInt(String(req.query?.limit || "10"), 10) || 10, 1), 10);
 
@@ -670,7 +670,7 @@ export async function registerRoutes(httpServer, app) {
         };
 
         if (!imapConfig.user || !imapConfig.password) {
-      res.status(500).json({ error: "Mailbox service is not ready yet. Please contact support." });
+          res.status(500).json({ error: "Mailbox service is not ready yet. Please contact support." });
           return;
         }
 
@@ -851,7 +851,13 @@ export async function registerRoutes(httpServer, app) {
           createdBy: user.email,
         });
         mailboxId = createdMailbox.id;
-        mailboxData = { id: createdMailbox.id, email: mailboxEmail, createdAt: now, updatedAt: now, createdBy: user.email };
+        mailboxData = {
+          id: createdMailbox.id,
+          email: mailboxEmail,
+          createdAt: now,
+          updatedAt: now,
+          createdBy: user.email,
+        };
       } else {
         const mailboxDoc = existing.docs[0];
         mailboxId = mailboxDoc.id;
