@@ -73,31 +73,35 @@ function hasFourDigitCode(content) {
   return /(?:^|\D)\d{4}(?!\d)/.test(normalized);
 }
 
+function hasDigitCodeLongerThanFour(content) {
+  const normalized = normalizeEmailSearchText(content);
+  // 5 থেকে 8 digit standalone number = OTP/password reset code
+  return /(?:^|\D)\d{5,8}(?!\d)/.test(normalized);
+}
+
 function isTemporaryOrHouseholdEmail(email) {
   const subject = String(email?.subject || "").toLowerCase();
   const html = String(email?.html || "").toLowerCase();
   const text = String(email?.text || "").toLowerCase();
-  const content = `${subject}
-${html}
-${text}`;
+  const rawContent = `${subject}\n${html}\n${text}`;
 
-  const keywords = [
-    "temporary",
-    "temporarily",
-    "household",
-    "travel",
-    "watch temporarily",
-    "i'm traveling",
-    "verify-device",
-    "temporary-access",
-    "update-primary-location",
-    "account/travel/verify",
-    "account/update-primary-location",
-    "yesitwasme",
-    "yes-it-was-me",
-  ];
+  // 5+ digit code পেলে সাথে সাথে বাদ (6-digit OTP, password reset, etc.)
+  if (hasDigitCodeLongerThanFour(rawContent)) return false;
 
-  return keywords.some((item) => content.includes(item)) || hasFourDigitCode(content);
+const urlKeywords = [
+  "netflix.com/verify-device",
+  "netflix.com/account/temporary-access",
+  "netflix.com/account/update-primary-location",
+  "netflix.com/account/travel/verify",
+  "ntflx.com/verify-device",          // ✅
+  "ntflx.com/update-primary-location", // ✅
+  "ntflx.com/yesitwasme",             // ✅
+  "ntflx.com/yes-it-was-me",          // ✅
+];
+
+  const hasUrl = urlKeywords.some((kw) => rawContent.includes(kw));
+
+  return hasUrl || hasFourDigitCode(rawContent);
 }
 
 function decodeBase64Url(value) {
