@@ -69,8 +69,14 @@ function normalizeEmailSearchText(value) {
 }
 
 function hasFourDigitCode(content) {
+function hasFourDigitCode(content) {
   const normalized = normalizeEmailSearchText(content);
   return /(?:^|\D)\d{4}(?!\d)/.test(normalized);
+}
+
+function hasSixOrMoreDigitCode(content) {
+  const normalized = normalizeEmailSearchText(content);
+  return /(?:^|\D)\d{6,}(?!\d)/.test(normalized);
 }
 
 function isTemporaryOrHouseholdEmail(email) {
@@ -97,7 +103,10 @@ ${text}`;
     "yes-it-was-me",
   ];
 
-  return keywords.some((item) => content.includes(item)) || hasFourDigitCode(content);
+  return (
+    (keywords.some((item) => content.includes(item)) || hasFourDigitCode(content)) &&
+    !hasSixOrMoreDigitCode(content)
+  );
 }
 
 function decodeBase64Url(value) {
