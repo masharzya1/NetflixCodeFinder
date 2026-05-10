@@ -53,6 +53,7 @@ export function AuthProvider({ children }) {
             const response = await fetch("/api/admin/bootstrap", {
               headers: { Authorization: `Bearer ${token}` },
             });
+
             const payload = await response.json();
 
             if (!response.ok) {
@@ -83,6 +84,7 @@ export function AuthProvider({ children }) {
 
   async function signInAdmin() {
     try {
+      await initFirebaseClient();
       const auth = getFirebaseAuth();
       await signInWithPopup(auth, getGoogleProvider());
       setAuthError("");
@@ -93,9 +95,17 @@ export function AuthProvider({ children }) {
   }
 
   async function signOutAdmin() {
-    const auth = getFirebaseAuth();
-    await signOut(auth);
-    setAdminData(null);
+    try {
+      await initFirebaseClient();
+      const auth = getFirebaseAuth();
+      await signOut(auth);
+      setAdminData(null);
+      setFirebaseUser(null);
+      setAuthError("");
+    } catch (error) {
+      setAuthError(error.message || "Sign out failed.");
+      throw error;
+    }
   }
 
   async function getAdminToken() {
@@ -123,8 +133,10 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
+
   if (!context) {
     throw new Error("useAuth must be used inside AuthProvider");
   }
+
   return context;
 }
