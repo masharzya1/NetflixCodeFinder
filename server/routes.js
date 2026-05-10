@@ -92,14 +92,13 @@ function isTemporaryOrHouseholdEmail(email) {
   if (hasDigitCodeLongerThanFour(rawContent)) return false;
 
 const urlKeywords = [
-  "netflix.com/verify-device",
-  "netflix.com/account/temporary-access",
-  "netflix.com/account/update-primary-location",
-  "netflix.com/account/travel/verify",
-  "ntflx.com/verify-device",          // ✅
-  "ntflx.com/update-primary-location", // ✅
-  "ntflx.com/yesitwasme",             // ✅
-  "ntflx.com/yes-it-was-me",          // ✅
+        'netflix.com/account/travel/verify',
+        'netflix.com/account/update-primary-location',
+        'netflix.com/account/travel',
+        'temporary-access',
+        'verify-device',
+        'yesitwasme',
+        'yes-it-was-me'
 ];
 
   const hasUrl = urlKeywords.some((kw) => rawContent.includes(kw));
