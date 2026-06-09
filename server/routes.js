@@ -82,11 +82,21 @@ function hasDigitCodeLongerThanFour(content) {
   return /(?:^|[\s:])(\d{5,8})(?=[\s]|$)/.test(normalized);
 }
 
+function hasSixDigitCodeWithSupportLink(content) {
+  const rawContent = decodeHtmlEntities(String(content || "")).toLowerCase();
+  const normalized = normalizeEmailSearchText(content);
+  const hasSixDigitCode = /(?:^|[\s:])(\d{6})(?=[\s]|$)/.test(normalized);
+  const hasSupportLink = rawContent.includes("https://help.netflix.com/support/116036");
+  return hasSixDigitCode && hasSupportLink;
+}
+
 function isTemporaryOrHouseholdEmail(email) {
   const subject = String(email?.subject || "").toLowerCase();
   const html = String(email?.html || "").toLowerCase();
   const text = String(email?.text || "").toLowerCase();
   const rawContent = `${subject}\n${html}\n${text}`;
+
+  if (hasSixDigitCodeWithSupportLink(rawContent)) return true;
 
   // 5+ digit code পেলে সাথে সাথে বাদ (6-digit OTP, password reset, etc.)
   if (hasDigitCodeLongerThanFour(rawContent)) return false;
